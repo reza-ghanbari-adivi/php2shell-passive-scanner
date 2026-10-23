@@ -109,11 +109,11 @@ def parse_ports(port_str: str) -> list:
 def save_report(results: list, output_path: str):
     if output_path.endswith(".json"):
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "scan_time": datetime.utcnow().isoformat(),
-                "total_hosts": len(results),
-                "results": results
-            }, f, indent=4)
+        json.dump({
+            "scan_time": datetime.now(timezone.utc).isoformat(),
+            "total_hosts": len(results),
+            "results": results
+        }, f, indent=4)
         print(f"[*] Report saved to JSON: {output_path}")
     elif output_path.endswith(".csv"):
         with open(output_path, "w", newline="", encoding="utf-8") as f:
@@ -126,7 +126,11 @@ def save_report(results: list, output_path: str):
 def main():
     parser = argparse.ArgumentParser(description="Scan VLAN/Subnet across multiple ports for exposed vulnerable PHP runtimes.")
     parser.add_argument("cidr", help="Target VLAN CIDR range (e.g. 87.107.135.0/24)")
-    parser.add_argument("-p", "--ports", default="80,443", help="Ports to scan (e.g. 80,443, 8000-8080, or single port like 443)")
+    parser.add_argument(
+        "-p", "--ports", 
+        default="80,443,8080,8443,8000,8888,3000,5000,2082,2083,2095,2096,8090,8880", 
+        help="Ports to scan (default includes all common web and hosting ports)"
+    )
     parser.add_argument("-t", "--threads", type=int, default=100, help="Concurrency thread count (default: 100)")
     parser.add_argument("--timeout", type=float, default=2.0, help="Connection timeout in seconds (default: 2.0)")
     parser.add_argument("-o", "--output", help="Save results to file (.json or .csv)")

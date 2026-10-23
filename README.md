@@ -1,11 +1,11 @@
 
-# PHP2Shell Passive Scanner (`php2shell-passive-scanner`)
+# PHP2Shell  Scanner (`php2shell-passive-scanner`)
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Security Audit](https://img.shields.io/badge/security-audit-orange.svg)
 
-A professional, safe, and non-destructive network/VLAN auditing tool designed to detect exposed PHP runtimes vulnerable to **CVE-2026-109618** and **CVE-2026-109619** (commonly referenced as **"PHP2Shell"**). 
+A safe, and non-destructive network/VLAN auditing tool designed to detect exposed PHP runtimes vulnerable to **CVE-2026-109618** and **CVE-2026-109619** (commonly referenced as **"PHP2Shell"**). 
 
 This tool performs **passive version inspection** via HTTP headers (`Server` and `X-Powered-By`) across target subnets, CIDR blocks, and multiple custom ports without executing any payloads or causing service disruptions.
 

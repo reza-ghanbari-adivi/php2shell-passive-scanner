@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VLAN & Local Subnet Passive Inspector for PHP Versions (CVE-2026-109618 / CVE-2026-109619)
-Safely inspects HTTP/HTTPS headers across subnets without disruptive exploitation.
+Safely inspects HTTP/HTTPS headers across subnets and multiple ports without disruptive exploitation.
 """
 
 import argparse
@@ -41,7 +41,7 @@ def extract_php_version(header_value: str):
         return tuple(int(x) for x in match.groups())
     return None
 
-def check_host(ip: str, port: int, timeout: float) -> dict:
+def check_host_port(ip: str, port: int, timeout: float) -> dict:
     scheme = "https" if port in (443, 8443) else "http"
     url = f"{scheme}://{ip}:{port}/"
     
@@ -86,6 +86,26 @@ def check_host(ip: str, port: int, timeout: float) -> dict:
 
     return result
 
+def parse_ports(port_str: str) -> list:
+    ports = set()
+    parts = port_str.split(",")
+    for part in parts:
+        part = part.strip()
+        if "-" in part:
+            try:
+                start, end = map(int, part.split("-"))
+                ports.update(range(start, end + 1))
+            except ValueError:
+                print(f"[!] Invalid port range: {part}", file=sys.stderr)
+                sys.exit(1)
+        else:
+            try:
+                ports.add(int(part))
+            except ValueError:
+                print(f"[!] Invalid port number: {part}", file=sys.stderr)
+                sys.exit(1)
+    return sorted(list(ports))
+
 def save_report(results: list, output_path: str):
     if output_path.endswith(".json"):
         with open(output_path, "w", encoding="utf-8") as f:
@@ -104,10 +124,10 @@ def save_report(results: list, output_path: str):
         print(f"[*] Report saved to CSV: {output_path}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Scan VLAN/Subnet for exposed vulnerable PHP runtimes safely.")
+    parser = argparse.ArgumentParser(description="Scan VLAN/Subnet across multiple ports for exposed vulnerable PHP runtimes.")
     parser.add_argument("cidr", help="Target VLAN CIDR range (e.g. 87.107.135.0/24)")
-    parser.add_argument("-p", "--port", type=int, default=443, help="HTTP/HTTPS port to scan (default: 443)")
-    parser.add_argument("-t", "--threads", type=int, default=60, help="Concurrency thread count (default: 60)")
+    parser.add_argument("-p", "--ports", default="80,443", help="Ports to scan (e.g. 80,443, 8000-8080, or single port like 443)")
+    parser.add_argument("-t", "--threads", type=int, default=100, help="Concurrency thread count (default: 100)")
     parser.add_argument("--timeout", type=float, default=2.0, help="Connection timeout in seconds (default: 2.0)")
     parser.add_argument("-o", "--output", help="Save results to file (.json or .csv)")
 
@@ -119,9 +139,13 @@ def main():
         print(f"[!] Invalid network specification: {e}", file=sys.stderr)
         sys.exit(1)
 
+    target_ports = parse_ports(args.ports)
+    total_ips = list(network.hosts()) or [network.network_address] # Handles /32 as well
+
     print(f"[*] Scanning VLAN / Subnet : {network}")
-    print(f"[*] Target Port           : {args.port}")
-    print(f"[*] Total IP Addresses    : {network.num_addresses}")
+    print(f"[*] Target Ports          : {target_ports}")
+    print(f"[*] Total IP Addresses    : {len(total_ips)}")
+    print(f"[*] Total Tasks (IP x Port): {len(total_ips) * len(target_ports)}")
     print("=" * 70)
 
     active_count = 0
@@ -129,7 +153,10 @@ def main():
     scan_results = []
 
     with ThreadPoolExecutor(max_workers=args.threads) as executor:
-        futures = {executor.submit(check_host, str(ip), args.port, args.timeout): ip for ip in network.hosts()}
+        futures = []
+        for ip in total_ips:
+            for port in target_ports:
+                futures.append(executor.submit(check_host_port, str(ip), port, args.timeout))
         
         for future in as_completed(futures):
             res = future.result()

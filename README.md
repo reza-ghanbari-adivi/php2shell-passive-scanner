@@ -36,4 +36,3 @@ python3 vlan_scanner.py 87.107.84.0/24 -p 80-443 -t 150 -o results.csv
 ```
 ## disclaimer
 use it on your own infra or with permission. don't do stupid things.
-```

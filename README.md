@@ -1,8 +1,4 @@
-Here is the updated, comprehensive `README.md` file that reflects all the latest professional features of your tool, including multi-port scanning, port ranges, and report exporting.
 
-You can update your `README.md` file with the following content:
-
-```markdown
 # PHP2Shell Passive Scanner (`php2shell-passive-scanner`)
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
@@ -111,5 +107,4 @@ php2shell-passive-scanner/
 
 This tool is created strictly for **authorized security auditing, educational purposes, and defensive vulnerability management**. Do not use this tool against targets without explicit prior written authorization from the system owners. The author assumes no liability for any misuse or damage caused by this software.
 
----
 

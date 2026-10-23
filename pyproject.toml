@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "php2shell-passive-scanner"
+version = "1.0.0"
+description = "A safe, passive subnet/VLAN inspector for PHP CVE-2026-109618 and CVE-2026-109619"
+readme = "README.md"
+authors = [
+    { name = "Reza Ghanbari", email = "ghanbariadivireza@gmail.com" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security",
+]
+requires-python = ">=3.8"
+
+[project.scripts]
+php2shell-scanner = "vlan_scanner:main"
